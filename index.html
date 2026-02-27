@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gesture Rock–Paper–Scissors</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <h1>Gesture Rock–Paper–Scissors</h1>
+        <p class="subtitle">
+          Show a hand gesture (Rock, Paper, or Scissors) to your webcam, then play against an AI opponent.
+        </p>
+      </header>
+
+      <main class="app-main">
+        <section class="video-section">
+          <div class="video-wrapper">
+            <video class="input_video" autoplay playsinline></video>
+            <canvas class="output_canvas"></canvas>
+            <div class="overlay-label">
+              <span>Detected Gesture:</span>
+              <strong id="current-gesture">None</strong>
+            </div>
+          </div>
+          <button id="start-camera" class="primary-button">Start Camera</button>
+        </section>
+
+        <section class="game-section">
+          <div class="status-row">
+            <div>
+              <span class="label">Player Move:</span>
+              <span id="player-move" class="value">–</span>
+            </div>
+            <div>
+              <span class="label">AI Move:</span>
+              <span id="ai-move" class="value">–</span>
+            </div>
+          </div>
+
+          <div class="status-row">
+            <div>
+              <span class="label">Player Score:</span>
+              <span id="player-score" class="value">0</span>
+            </div>
+            <div>
+              <span class="label">AI Score:</span>
+              <span id="ai-score" class="value">0</span>
+            </div>
+          </div>
+
+          <div class="game-actions">
+            <button id="play-round" class="primary-button" disabled>Play Round</button>
+            <button id="reset-game" class="secondary-button">Reset Game</button>
+          </div>
+
+          <div id="round-result" class="round-result">Start the camera and show a gesture to play.</div>
+
+          <section class="help-section">
+            <h2>How to Play</h2>
+            <ul>
+              <li>Click <strong>Start Camera</strong> and allow webcam access.</li>
+              <li>Hold your hand up clearly in view of the camera.</li>
+              <li>Make a clear <strong>Rock</strong> (fist), <strong>Paper</strong> (flat hand), or <strong>Scissors</strong> (two fingers extended) gesture.</li>
+              <li>When the detected gesture text looks correct, click <strong>Play Round</strong> to lock in your move.</li>
+            </ul>
+          </section>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <span>Computer Vision Rock–Paper–Scissors demo.</span>
+      </footer>
+    </div>
+
+    <!-- MediaPipe dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+    <script src="script.js"></script>
+  </body>
+  </html>
+
