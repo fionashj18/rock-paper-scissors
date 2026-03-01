@@ -28,3 +28,8 @@ Add gesture training mode
 
 Store user stats in backend
 could you help me write the code for this
+
+
+2. There are some changed i would like for this game:
+1. i want another mode for another human player to play on another device with the current human player
+2. i want a count down instead of a play round button

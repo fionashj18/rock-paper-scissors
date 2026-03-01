@@ -16,38 +16,50 @@ let roomId = null;
 let twoPlayerScores = { p1: 0, p2: 0 };
 let lastRoundStartTime = 0;
 
-// DOM
-const currentGestureEl = document.getElementById("current-gesture");
-const playerMoveEl = document.getElementById("player-move");
-const aiMoveEl = document.getElementById("ai-move");
-const playerScoreEl = document.getElementById("player-score");
-const aiScoreEl = document.getElementById("ai-score");
-const roundResultEl = document.getElementById("round-result");
-const startCameraBtn = document.getElementById("start-camera");
-const startRoundBtn = document.getElementById("start-round");
-const resetGameBtn = document.getElementById("reset-game");
-const countdownOverlayEl = document.getElementById("countdown-overlay");
+// DOM (set when DOM is ready)
+let currentGestureEl, playerMoveEl, aiMoveEl, playerScoreEl, aiScoreEl;
+let roundResultEl, startCameraBtn, startRoundBtn, resetGameBtn, countdownOverlayEl;
+let singlePlayerUi, twoPlayerUi, twoPlayerSetup, twoPlayerLobby, twoPlayerGame;
+let createRoomBtn, joinRoomBtn, roomCodeInput, lobbyStatusEl, roomCodeDisplayEl;
+let copyLinkBtn, startRound2pBtn, p2YouMoveEl, p2OppMoveEl, p2YourScoreEl, p2OppScoreEl;
+let videoElement, canvasElement, canvasCtx;
 
-const singlePlayerUi = document.getElementById("single-player-ui");
-const twoPlayerUi = document.getElementById("two-player-ui");
-const twoPlayerSetup = document.getElementById("two-player-setup");
-const twoPlayerLobby = document.getElementById("two-player-lobby");
-const twoPlayerGame = document.getElementById("two-player-game");
-const createRoomBtn = document.getElementById("create-room");
-const joinRoomBtn = document.getElementById("join-room");
-const roomCodeInput = document.getElementById("room-code-input");
-const lobbyStatusEl = document.getElementById("lobby-status");
-const roomCodeDisplayEl = document.getElementById("room-code-display");
-const copyLinkBtn = document.getElementById("copy-link");
-const startRound2pBtn = document.getElementById("start-round-2p");
-const p2YouMoveEl = document.getElementById("p2-you-move");
-const p2OppMoveEl = document.getElementById("p2-opp-move");
-const p2YourScoreEl = document.getElementById("p2-your-score");
-const p2OppScoreEl = document.getElementById("p2-opp-score");
-
-const videoElement = document.querySelector(".input_video");
-const canvasElement = document.querySelector(".output_canvas");
-const canvasCtx = canvasElement.getContext("2d");
+function initDom() {
+  currentGestureEl = document.getElementById("current-gesture");
+  playerMoveEl = document.getElementById("player-move");
+  aiMoveEl = document.getElementById("ai-move");
+  playerScoreEl = document.getElementById("player-score");
+  aiScoreEl = document.getElementById("ai-score");
+  roundResultEl = document.getElementById("round-result");
+  startCameraBtn = document.getElementById("start-camera");
+  startRoundBtn = document.getElementById("start-round");
+  resetGameBtn = document.getElementById("reset-game");
+  countdownOverlayEl = document.getElementById("countdown-overlay");
+  singlePlayerUi = document.getElementById("single-player-ui");
+  twoPlayerUi = document.getElementById("two-player-ui");
+  twoPlayerSetup = document.getElementById("two-player-setup");
+  twoPlayerLobby = document.getElementById("two-player-lobby");
+  twoPlayerGame = document.getElementById("two-player-game");
+  createRoomBtn = document.getElementById("create-room");
+  joinRoomBtn = document.getElementById("join-room");
+  roomCodeInput = document.getElementById("room-code-input");
+  lobbyStatusEl = document.getElementById("lobby-status");
+  roomCodeDisplayEl = document.getElementById("room-code-display");
+  copyLinkBtn = document.getElementById("copy-link");
+  startRound2pBtn = document.getElementById("start-round-2p");
+  p2YouMoveEl = document.getElementById("p2-you-move");
+  p2OppMoveEl = document.getElementById("p2-opp-move");
+  p2YourScoreEl = document.getElementById("p2-your-score");
+  p2OppScoreEl = document.getElementById("p2-opp-score");
+  videoElement = document.querySelector(".input_video");
+  canvasElement = document.querySelector(".output_canvas");
+  if (!videoElement || !canvasElement || !roundResultEl) {
+    document.body.innerHTML = "<p style='padding:2rem;color:red;'>Page structure is broken. Make sure index.html is complete and you open the site via <strong>http://localhost:8080</strong> (with the server running).</p>";
+    return false;
+  }
+  canvasCtx = canvasElement.getContext("2d");
+  return true;
+}
 
 // ---------- Gesture classification ----------
 function classifyGesture(landmarks) {
@@ -501,6 +513,9 @@ function initCamera() {
   });
   camera.start();
 }
+
+// Ensure DOM refs are set before attaching listeners (scripts run at end of body, so DOM is ready)
+if (!initDom()) throw new Error("initDom failed");
 
 // ---------- Mode switching ----------
 document.getElementById("mode-single").addEventListener("click", () => {
