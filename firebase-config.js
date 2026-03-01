@@ -1,5 +1,4 @@
 // Firebase config for two-player mode.
-// Paste your Firebase Console "Config" snippet here; the app uses window.FIREBASE_CONFIG.
 const firebaseConfig = {
   apiKey: "AIzaSyDOLWMNKyyvOW9XORucOuyq9KV3I_i3HAY",
   authDomain: "rock-paper-sci.firebaseapp.com",
