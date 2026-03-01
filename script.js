@@ -356,6 +356,12 @@ function onRoomUpdate(snap) {
     countdownEndTime = roundStartTime + 3000;
     runCountdownTwoPlayer(roundStartTime);
   }
+
+  // When both players have submitted moves, resolve the round (only p1 writes to avoid double count)
+  const moves = data.moves || {};
+  if (moves.p1 && moves.p2 && myRole === "p1") {
+    resolveTwoPlayerRound(data);
+  }
 }
 
 function runCountdownTwoPlayer(roundStartTimeMs) {
