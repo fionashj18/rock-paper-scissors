@@ -24,6 +24,34 @@ Gesture-based Rock–Paper–Scissors in the browser: webcam + 3‑2‑1 countdo
 - Use **http://localhost:8080** (or the port you chose), not `file:///...`.
 - If you see “Address already in use”, use a different port, e.g. `python3 -m http.server 3000`, then open http://localhost:3000.
 
+## Deploy to Vercel (recommended — HTTPS, shareable link, camera works)
+
+1. **Push this project to GitHub** (if you haven’t already):
+   ```bash
+   git add .
+   git commit -m "Add Vercel config"
+   git push origin main
+   ```
+
+2. **Go to [vercel.com](https://vercel.com)** and sign in (GitHub is easiest).
+
+3. **Import the repo:**  
+   Click **Add New… → Project**, choose your **rock-paper-scissors** repo, then **Import**.
+
+4. **Deploy:**  
+   Leave all settings as-is (no build command; root is the output). Click **Deploy**.
+
+5. **Use your live URL** (e.g. `https://rock-paper-scissors-xxx.vercel.app`).  
+   It’s HTTPS, so the camera works and you can share the link for two-player. After creating a room, click **Copy link** and send that URL to your friend.
+
+**Optional — deploy from the terminal:**
+```bash
+npx vercel
+```
+Follow the prompts and use the same repo or link the project in the Vercel dashboard.
+
+---
+
 ## Two-player (optional)
 
 Two-player mode uses Firebase Realtime Database. Set your config in `firebase-config.js` (see file comments). Create the Realtime Database in Firebase Console if you haven’t. Without Firebase, single-player and the countdown still work.
