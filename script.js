@@ -422,12 +422,14 @@ function startRoundTwoPlayer() {
   });
 }
 
-copyLinkBtn.addEventListener("click", () => {
-  const url = window.location.href.split("?")[0] + "?room=" + roomId;
-  navigator.clipboard.writeText(url).then(() => {
-    roundResultEl.textContent = "Link copied! Share it with your friend.";
+if (copyLinkBtn) {
+  copyLinkBtn.addEventListener("click", () => {
+    const url = window.location.href.split("?")[0] + "?room=" + roomId;
+    navigator.clipboard.writeText(url).then(() => {
+      if (roundResultEl) roundResultEl.textContent = "Link copied! Share it with your friend.";
+    });
   });
-});
+}
 
 // Check URL for ?room=CODE to auto-join
 function checkRoomInUrl() {
@@ -497,80 +499,126 @@ function initHands() {
   hands.onResults(onResults);
 }
 
+function startFrameLoop() {
+  if (!hands || !videoElement) return;
+  function tick() {
+    if (!hands || !videoElement || !videoElement.srcObject) return;
+    hands.send({ image: videoElement }).then(function () {
+      requestAnimationFrame(tick);
+    }).catch(function () {
+      requestAnimationFrame(tick);
+    });
+  }
+  requestAnimationFrame(tick);
+}
+
 function initCamera() {
-  if (!window.Camera) {
-    roundResultEl.textContent =
-      "Camera utils not loaded. Check your network connection.";
+  function onStream(stream) {
+    if (!videoElement) return;
+    videoElement.srcObject = stream;
+    videoElement.onloadedmetadata = function () {
+      videoElement.play().then(function () {
+        initHands();
+        if (window.Camera) {
+          camera = new window.Camera(videoElement, {
+            onFrame: async function () {
+              if (!hands) return;
+              await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480,
+          });
+          camera.start();
+        } else {
+          startFrameLoop();
+        }
+      }).catch(function (err) {
+        if (roundResultEl) roundResultEl.textContent = "Camera error: " + (err.message || "play failed");
+        if (startCameraBtn) startCameraBtn.disabled = false;
+      });
+    };
+  }
+
+  function onError(err) {
+    if (roundResultEl) roundResultEl.textContent = "Camera error: " + (err.message || "Could not access webcam. Allow access and try again.");
+    if (startCameraBtn) startCameraBtn.disabled = false;
+  }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (roundResultEl) roundResultEl.textContent = "Webcam not supported. Open from http://localhost:8080 (not file://).";
+    if (startCameraBtn) startCameraBtn.disabled = false;
     return;
   }
-  camera = new window.Camera(videoElement, {
-    onFrame: async () => {
-      if (!hands) return;
-      await hands.send({ image: videoElement });
-    },
-    width: 640,
-    height: 480,
-  });
-  camera.start();
+
+  navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+    .then(onStream)
+    .catch(onError);
 }
 
 // Ensure DOM refs are set before attaching listeners (scripts run at end of body, so DOM is ready)
 if (!initDom()) throw new Error("initDom failed");
 
 // ---------- Mode switching ----------
-document.getElementById("mode-single").addEventListener("click", () => {
-  gameMode = "single";
-  document.getElementById("mode-single").classList.add("active");
-  document.getElementById("mode-two").classList.remove("active");
-  singlePlayerUi.classList.remove("hidden");
-  twoPlayerUi.classList.add("hidden");
-  if (roomRef) {
-    roomRef.off();
-    roomRef = null;
-  }
-  roundResultEl.textContent =
-    "Start the camera and show a gesture. Click “Start round” for a 3‑2‑1 countdown.";
-});
+const modeSingleEl = document.getElementById("mode-single");
+const modeTwoEl = document.getElementById("mode-two");
 
-document.getElementById("mode-two").addEventListener("click", () => {
-  gameMode = "two";
-  document.getElementById("mode-two").classList.add("active");
-  document.getElementById("mode-single").classList.remove("active");
-  singlePlayerUi.classList.add("hidden");
-  twoPlayerUi.classList.remove("hidden");
-  twoPlayerSetup.classList.remove("hidden");
-  twoPlayerLobby.classList.add("hidden");
-  twoPlayerGame.classList.add("hidden");
-  roundResultEl.textContent =
-    "Create a room and share the link/code, or join with a code.";
-});
+if (modeSingleEl) {
+  modeSingleEl.addEventListener("click", () => {
+    gameMode = "single";
+    modeSingleEl.classList.add("active");
+    if (modeTwoEl) modeTwoEl.classList.remove("active");
+    if (singlePlayerUi) singlePlayerUi.classList.remove("hidden");
+    if (twoPlayerUi) twoPlayerUi.classList.add("hidden");
+    if (roomRef) {
+      roomRef.off();
+      roomRef = null;
+    }
+    if (roundResultEl) roundResultEl.textContent =
+    "Start the camera and show a gesture. Click “Start round” for a 3‑2‑1 countdown.";
+  });
+}
+
+if (modeTwoEl) {
+  modeTwoEl.addEventListener("click", () => {
+    gameMode = "two";
+    modeTwoEl.classList.add("active");
+    if (modeSingleEl) modeSingleEl.classList.remove("active");
+    if (singlePlayerUi) singlePlayerUi.classList.add("hidden");
+    if (twoPlayerUi) twoPlayerUi.classList.remove("hidden");
+    if (twoPlayerSetup) twoPlayerSetup.classList.remove("hidden");
+    if (twoPlayerLobby) twoPlayerLobby.classList.add("hidden");
+    if (twoPlayerGame) twoPlayerGame.classList.add("hidden");
+    if (roundResultEl) roundResultEl.textContent =
+      "Create a room and share the link/code, or join with a code.";
+  });
+}
 
 // ---------- Start camera ----------
-startCameraBtn.addEventListener("click", () => {
-  const hasGetUserMedia =
-    typeof navigator !== "undefined" &&
-    navigator.mediaDevices &&
-    typeof navigator.mediaDevices.getUserMedia === "function";
+if (startCameraBtn) {
+  startCameraBtn.addEventListener("click", function () {
+    try {
+      if (roundResultEl) roundResultEl.textContent = "Starting camera… Allow webcam access in the browser.";
+      startCameraBtn.disabled = true;
 
-  if (!hasGetUserMedia) {
-    roundResultEl.textContent =
-      "Webcam API not available. Run this page from http://localhost (or https), not file://, and open it in a real browser tab (Chrome/Edge recommended).";
-    return;
-  }
+      if (!window.Hands) {
+        if (roundResultEl) roundResultEl.textContent = "MediaPipe Hands not loaded. Check network and open from http://localhost:8080.";
+        startCameraBtn.disabled = false;
+        return;
+      }
 
-  startCameraBtn.disabled = true;
-  roundResultEl.textContent =
-    "Starting camera… Allow webcam access in the browser.";
-  initHands();
-  initCamera();
-});
+      initCamera();
+    } catch (e) {
+      if (roundResultEl) roundResultEl.textContent = "Error: " + (e.message || String(e));
+      startCameraBtn.disabled = false;
+    }
+  });
+}
 
-startRoundBtn.addEventListener("click", runCountdownSinglePlayer);
-resetGameBtn.addEventListener("click", resetGame);
-
-createRoomBtn.addEventListener("click", createRoom);
-joinRoomBtn.addEventListener("click", joinRoom);
-startRound2pBtn.addEventListener("click", startRoundTwoPlayer);
+if (startRoundBtn) startRoundBtn.addEventListener("click", runCountdownSinglePlayer);
+if (resetGameBtn) resetGameBtn.addEventListener("click", resetGame);
+if (createRoomBtn) createRoomBtn.addEventListener("click", createRoom);
+if (joinRoomBtn) joinRoomBtn.addEventListener("click", joinRoom);
+if (startRound2pBtn) startRound2pBtn.addEventListener("click", startRoundTwoPlayer);
 
 checkRoomInUrl();
 </think>

@@ -1,6 +1,6 @@
 // Firebase config for two-player mode.
-// The app loads Firebase via script tags and uses this config to connect.
-window.FIREBASE_CONFIG = {
+// Paste your Firebase Console "Config" snippet here; the app uses window.FIREBASE_CONFIG.
+const firebaseConfig = {
   apiKey: "AIzaSyDOLWMNKyyvOW9XORucOuyq9KV3I_i3HAY",
   authDomain: "rock-paper-sci.firebaseapp.com",
   databaseURL: "https://rock-paper-sci-default-rtdb.firebaseio.com",
@@ -9,3 +9,4 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: "154064722998",
   appId: "1:154064722998:web:7dc5c4e37b812d97388c97"
 };
+window.FIREBASE_CONFIG = firebaseConfig;
