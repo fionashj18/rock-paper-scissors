@@ -102,6 +102,115 @@ body {
   text-transform: uppercase;
 }
 
+/* Countdown overlay */
+.countdown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.countdown-overlay.visible {
+  opacity: 1;
+}
+
+.countdown-overlay .countdown-number {
+  font-size: clamp(4rem, 15vw, 8rem);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 40px rgba(34, 197, 94, 0.8);
+  line-height: 1;
+}
+
+.countdown-overlay .countdown-go {
+  font-size: clamp(2.5rem, 10vw, 5rem);
+  font-weight: 800;
+  color: #4ade80;
+  text-shadow: 0 0 30px rgba(74, 222, 128, 0.9);
+}
+
+/* Mode tabs */
+.mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.mode-tab {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(75, 85, 99, 0.8);
+  background: rgba(31, 41, 55, 0.8);
+  color: #d1d5db;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.mode-tab:hover {
+  background: rgba(55, 65, 81, 0.9);
+  color: #f9fafb;
+}
+
+.mode-tab.active {
+  background: linear-gradient(135deg, #10b981, #22c55e);
+  color: #022c22;
+  border-color: transparent;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Two-player UI */
+.join-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  align-items: center;
+}
+
+.join-row input {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(75, 85, 99, 0.8);
+  background: rgba(17, 24, 39, 0.9);
+  color: #f9fafb;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  width: 8rem;
+}
+
+.join-row input::placeholder {
+  color: #6b7280;
+}
+
+.lobby-status,
+.room-code-display,
+.share-hint {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.room-code-display {
+  font-size: 1.1rem;
+  color: #fbbf24;
+}
+
+.share-hint {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
 .primary-button,
 .secondary-button {
   display: inline-flex;

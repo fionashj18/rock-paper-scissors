@@ -11,8 +11,12 @@
       <header class="app-header">
         <h1>Gesture Rock–Paper–Scissors</h1>
         <p class="subtitle">
-          Show a hand gesture (Rock, Paper, or Scissors) to your webcam, then play against an AI opponent.
+          Show a hand gesture to your webcam. Use the countdown to throw on time—or play a friend on another device.
         </p>
+        <div class="mode-tabs">
+          <button type="button" id="mode-single" class="mode-tab active">Single player (vs AI)</button>
+          <button type="button" id="mode-two" class="mode-tab">Two player (vs human)</button>
+        </div>
       </header>
 
       <main class="app-main">
@@ -20,6 +24,7 @@
           <div class="video-wrapper">
             <video class="input_video" autoplay playsinline></video>
             <canvas class="output_canvas"></canvas>
+            <div class="countdown-overlay" id="countdown-overlay" aria-hidden="true"></div>
             <div class="overlay-label">
               <span>Detected Gesture:</span>
               <strong id="current-gesture">None</strong>
@@ -29,42 +34,85 @@
         </section>
 
         <section class="game-section">
-          <div class="status-row">
-            <div>
-              <span class="label">Player Move:</span>
-              <span id="player-move" class="value">–</span>
+          <!-- Single-player UI -->
+          <div id="single-player-ui" class="game-ui">
+            <div class="status-row">
+              <div>
+                <span class="label">Your Move:</span>
+                <span id="player-move" class="value">–</span>
+              </div>
+              <div>
+                <span class="label">AI Move:</span>
+                <span id="ai-move" class="value">–</span>
+              </div>
             </div>
-            <div>
-              <span class="label">AI Move:</span>
-              <span id="ai-move" class="value">–</span>
+            <div class="status-row">
+              <div>
+                <span class="label">Your Score:</span>
+                <span id="player-score" class="value">0</span>
+              </div>
+              <div>
+                <span class="label">AI Score:</span>
+                <span id="ai-score" class="value">0</span>
+              </div>
+            </div>
+            <div class="game-actions">
+              <button id="start-round" class="primary-button" disabled>Start round</button>
+              <button id="reset-game" class="secondary-button">Reset Game</button>
             </div>
           </div>
 
-          <div class="status-row">
-            <div>
-              <span class="label">Player Score:</span>
-              <span id="player-score" class="value">0</span>
+          <!-- Two-player UI -->
+          <div id="two-player-ui" class="game-ui hidden">
+            <div id="two-player-setup">
+              <button type="button" id="create-room" class="primary-button">Create room</button>
+              <div class="join-row">
+                <input type="text" id="room-code-input" placeholder="Room code" maxlength="6" />
+                <button type="button" id="join-room" class="secondary-button">Join room</button>
+              </div>
             </div>
-            <div>
-              <span class="label">AI Score:</span>
-              <span id="ai-score" class="value">0</span>
+            <div id="two-player-lobby" class="hidden">
+              <p class="lobby-status" id="lobby-status">Creating room…</p>
+              <p class="room-code-display">Room code: <strong id="room-code-display"></strong></p>
+              <p class="share-hint">Share this link or code with your friend on another device.</p>
+              <button type="button" id="copy-link" class="secondary-button">Copy link</button>
+            </div>
+            <div id="two-player-game" class="hidden">
+              <div class="status-row">
+                <div>
+                  <span class="label">You:</span>
+                  <span id="p2-you-move" class="value">–</span>
+                </div>
+                <div>
+                  <span class="label">Opponent:</span>
+                  <span id="p2-opp-move" class="value">–</span>
+                </div>
+              </div>
+              <div class="status-row">
+                <div>
+                  <span class="label">Your score:</span>
+                  <span id="p2-your-score" class="value">0</span>
+                </div>
+                <div>
+                  <span class="label">Opponent score:</span>
+                  <span id="p2-opp-score" class="value">0</span>
+                </div>
+              </div>
+              <div class="game-actions">
+                <button type="button" id="start-round-2p" class="primary-button" disabled>Start round</button>
+              </div>
             </div>
           </div>
 
-          <div class="game-actions">
-            <button id="play-round" class="primary-button" disabled>Play Round</button>
-            <button id="reset-game" class="secondary-button">Reset Game</button>
-          </div>
-
-          <div id="round-result" class="round-result">Start the camera and show a gesture to play.</div>
+          <div id="round-result" class="round-result">Start the camera and show a gesture. Click “Start round” for a 3‑2‑1 countdown.</div>
 
           <section class="help-section">
             <h2>How to Play</h2>
             <ul>
               <li>Click <strong>Start Camera</strong> and allow webcam access.</li>
-              <li>Hold your hand up clearly in view of the camera.</li>
-              <li>Make a clear <strong>Rock</strong> (fist), <strong>Paper</strong> (flat hand), or <strong>Scissors</strong> (two fingers extended) gesture.</li>
-              <li>When the detected gesture text looks correct, click <strong>Play Round</strong> to lock in your move.</li>
+              <li>Make a clear <strong>Rock</strong> (fist), <strong>Paper</strong> (flat hand), or <strong>Scissors</strong> (two fingers) gesture.</li>
+              <li>Click <strong>Start round</strong> for a 3‑2‑1 countdown; your move is locked when it hits zero.</li>
+              <li>In two-player mode, create a room and share the link or code; your friend joins on their device.</li>
             </ul>
           </section>
         </section>
@@ -80,6 +128,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
+    <!-- Firebase for two-player mode (optional) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
   </body>
   </html>
