@@ -1,0 +1,30 @@
+This is what I would like to create:
+Gesture-Based Rock Paper Scissors
+Concept:
+
+Use webcam to detect:
+
+Rock
+
+Paper
+
+Scissors
+
+Play against:
+
+AI opponent
+
+Tech:
+
+MediaPipe + custom logic
+
+Or simple trained model
+
+Score tracking
+
+Upgrade:
+
+Add gesture training mode
+
+Store user stats in backend
+could you help me write the code for this
