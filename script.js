@@ -54,7 +54,7 @@ function initDom() {
   videoElement = document.querySelector(".input_video");
   canvasElement = document.querySelector(".output_canvas");
   if (!videoElement || !canvasElement || !roundResultEl) {
-    document.body.innerHTML = "<p style='padding:2rem;color:red;'>Page structure is broken. Make sure index.html is complete and you open the site via <strong>http://localhost:8080</strong> (with the server running).</p>";
+    document.body.innerHTML = "<p style='padding:2rem;color:red;'>Page structure is broken. Make sure index.html is complete and you open the site via a local server (e.g. <strong>http://localhost:8080</strong> or <strong>http://YOUR_IP:8080</strong>).</p>";
     return false;
   }
   canvasCtx = canvasElement.getContext("2d");
@@ -422,15 +422,6 @@ function startRoundTwoPlayer() {
   });
 }
 
-if (copyLinkBtn) {
-  copyLinkBtn.addEventListener("click", () => {
-    const url = window.location.href.split("?")[0] + "?room=" + roomId;
-    navigator.clipboard.writeText(url).then(() => {
-      if (roundResultEl) roundResultEl.textContent = "Link copied! Share it with your friend.";
-    });
-  });
-}
-
 // Check URL for ?room=CODE to auto-join
 function checkRoomInUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -540,12 +531,17 @@ function initCamera() {
   }
 
   function onError(err) {
-    if (roundResultEl) roundResultEl.textContent = "Camera error: " + (err.message || "Could not access webcam. Allow access and try again.");
+    const isLocalhost = /localhost|127\.0\.0\.1/.test(window.location.hostname);
+    let msg = "Camera error: " + (err.message || "Could not access webcam. Allow access and try again.");
+    if (!isLocalhost && window.location.protocol === "http:") {
+      msg += " Browsers often require HTTPS for camera when using an IP. Try: npx ngrok http 8080 (then open the https URL).";
+    }
+    if (roundResultEl) roundResultEl.textContent = msg;
     if (startCameraBtn) startCameraBtn.disabled = false;
   }
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    if (roundResultEl) roundResultEl.textContent = "Webcam not supported. Open from http://localhost:8080 (not file://).";
+    if (roundResultEl) roundResultEl.textContent = "Webcam not supported. Open from a server (localhost or your IP), not file://. If using your IP, try HTTPS (e.g. ngrok) for camera access.";
     if (startCameraBtn) startCameraBtn.disabled = false;
     return;
   }
@@ -555,73 +551,92 @@ function initCamera() {
     .catch(onError);
 }
 
-// Ensure DOM refs are set before attaching listeners (scripts run at end of body, so DOM is ready)
-if (!initDom()) throw new Error("initDom failed");
+// Run init after DOM is ready so all buttons and refs exist
+function initApp() {
+  try {
+    if (!initDom()) return;
 
-// ---------- Mode switching ----------
-const modeSingleEl = document.getElementById("mode-single");
-const modeTwoEl = document.getElementById("mode-two");
+    // ---------- Mode switching ----------
+    const modeSingleEl = document.getElementById("mode-single");
+    const modeTwoEl = document.getElementById("mode-two");
 
-if (modeSingleEl) {
-  modeSingleEl.addEventListener("click", () => {
-    gameMode = "single";
-    modeSingleEl.classList.add("active");
-    if (modeTwoEl) modeTwoEl.classList.remove("active");
-    if (singlePlayerUi) singlePlayerUi.classList.remove("hidden");
-    if (twoPlayerUi) twoPlayerUi.classList.add("hidden");
-    if (roomRef) {
-      roomRef.off();
-      roomRef = null;
+    if (modeSingleEl) {
+      modeSingleEl.addEventListener("click", () => {
+        gameMode = "single";
+        modeSingleEl.classList.add("active");
+        if (modeTwoEl) modeTwoEl.classList.remove("active");
+        if (singlePlayerUi) singlePlayerUi.classList.remove("hidden");
+        if (twoPlayerUi) twoPlayerUi.classList.add("hidden");
+        if (roomRef) {
+          roomRef.off();
+          roomRef = null;
+        }
+        if (roundResultEl) roundResultEl.textContent =
+          "Start the camera and show a gesture. Click \"Start round\" for a 3-2-1 countdown.";
+      });
     }
-    if (roundResultEl) roundResultEl.textContent =
-    "Start the camera and show a gesture. Click “Start round” for a 3‑2‑1 countdown.";
-  });
-}
 
-if (modeTwoEl) {
-  modeTwoEl.addEventListener("click", () => {
-    gameMode = "two";
-    modeTwoEl.classList.add("active");
-    if (modeSingleEl) modeSingleEl.classList.remove("active");
-    if (singlePlayerUi) singlePlayerUi.classList.add("hidden");
-    if (twoPlayerUi) twoPlayerUi.classList.remove("hidden");
-    if (twoPlayerSetup) twoPlayerSetup.classList.remove("hidden");
-    if (twoPlayerLobby) twoPlayerLobby.classList.add("hidden");
-    if (twoPlayerGame) twoPlayerGame.classList.add("hidden");
-    if (roundResultEl) roundResultEl.textContent =
-      "Create a room and share the link/code, or join with a code.";
-  });
-}
-
-// ---------- Start camera ----------
-if (startCameraBtn) {
-  startCameraBtn.addEventListener("click", function () {
-    try {
-      if (roundResultEl) roundResultEl.textContent = "Starting camera… Allow webcam access in the browser.";
-      startCameraBtn.disabled = true;
-
-      if (!window.Hands) {
-        if (roundResultEl) roundResultEl.textContent = "MediaPipe Hands not loaded. Check network and open from http://localhost:8080.";
-        startCameraBtn.disabled = false;
-        return;
-      }
-
-      initCamera();
-    } catch (e) {
-      if (roundResultEl) roundResultEl.textContent = "Error: " + (e.message || String(e));
-      startCameraBtn.disabled = false;
+    if (modeTwoEl) {
+      modeTwoEl.addEventListener("click", () => {
+        gameMode = "two";
+        modeTwoEl.classList.add("active");
+        if (modeSingleEl) modeSingleEl.classList.remove("active");
+        if (singlePlayerUi) singlePlayerUi.classList.add("hidden");
+        if (twoPlayerUi) twoPlayerUi.classList.remove("hidden");
+        if (twoPlayerSetup) twoPlayerSetup.classList.remove("hidden");
+        if (twoPlayerLobby) twoPlayerLobby.classList.add("hidden");
+        if (twoPlayerGame) twoPlayerGame.classList.add("hidden");
+        if (roundResultEl) roundResultEl.textContent =
+          "Create a room and share the link/code, or join with a code.";
+      });
     }
-  });
+
+    // ---------- Start camera ----------
+    if (startCameraBtn) {
+      startCameraBtn.addEventListener("click", function () {
+        try {
+          if (roundResultEl) roundResultEl.textContent = "Starting camera… Allow webcam access in the browser.";
+          startCameraBtn.disabled = true;
+
+          if (!window.Hands) {
+            if (roundResultEl) roundResultEl.textContent = "MediaPipe Hands not loaded. Check network and open from this page's URL (localhost or your IP), not file://.";
+            if (startCameraBtn) startCameraBtn.disabled = false;
+            return;
+          }
+
+          initCamera();
+        } catch (e) {
+          if (roundResultEl) roundResultEl.textContent = "Error: " + (e.message || String(e));
+          if (startCameraBtn) startCameraBtn.disabled = false;
+        }
+      });
+    }
+
+    if (startRoundBtn) startRoundBtn.addEventListener("click", runCountdownSinglePlayer);
+    if (resetGameBtn) resetGameBtn.addEventListener("click", resetGame);
+    if (createRoomBtn) createRoomBtn.addEventListener("click", createRoom);
+    if (joinRoomBtn) joinRoomBtn.addEventListener("click", joinRoom);
+    if (startRound2pBtn) startRound2pBtn.addEventListener("click", startRoundTwoPlayer);
+
+    if (copyLinkBtn) {
+      copyLinkBtn.addEventListener("click", () => {
+        const url = window.location.href.split("?")[0] + "?room=" + roomId;
+        navigator.clipboard.writeText(url).then(() => {
+          if (roundResultEl) roundResultEl.textContent = "Link copied! Share it with your friend.";
+        });
+      });
+    }
+
+    checkRoomInUrl();
+  } catch (e) {
+    console.error("Init error:", e);
+    const msg = document.getElementById("round-result");
+    if (msg) msg.textContent = "Setup error: " + (e.message || String(e));
+  }
 }
 
-if (startRoundBtn) startRoundBtn.addEventListener("click", runCountdownSinglePlayer);
-if (resetGameBtn) resetGameBtn.addEventListener("click", resetGame);
-if (createRoomBtn) createRoomBtn.addEventListener("click", createRoom);
-if (joinRoomBtn) joinRoomBtn.addEventListener("click", joinRoom);
-if (startRound2pBtn) startRound2pBtn.addEventListener("click", startRoundTwoPlayer);
-
-checkRoomInUrl();
-</think>
-Adding the resolve logic inside `onRoomUpdate` and fixing the Firebase timestamp read (ServerValue.TIMESTAMP is written as a number by the server).
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-StrReplace
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp);
+} else {
+  initApp();
+}
