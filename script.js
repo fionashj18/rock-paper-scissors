@@ -443,14 +443,16 @@ function onResults(results) {
 
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     for (const landmarks of results.multiHandLandmarks) {
-      window.drawConnectors(canvasCtx, landmarks, window.HAND_CONNECTIONS, {
-        color: "#22c55e",
-        lineWidth: 3,
-      });
-      window.drawLandmarks(canvasCtx, landmarks, {
-        color: "#bef264",
-        radius: 3,
-      });
+      if (typeof window.drawConnectors === "function" && window.HAND_CONNECTIONS) {
+        window.drawConnectors(canvasCtx, landmarks, window.HAND_CONNECTIONS, {
+          color: "#22c55e",
+          lineWidth: 3,
+        });
+        window.drawLandmarks(canvasCtx, landmarks, {
+          color: "#bef264",
+          radius: 3,
+        });
+      }
     }
     const gesture = classifyGesture(results.multiHandLandmarks[0]);
     latestGesture = gesture;
